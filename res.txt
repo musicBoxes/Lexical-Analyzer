@@ -1,0 +1,18 @@
+int ssss_spl123LP
+RP
+
+LC
+
+	int i ASSIGN
+ 0COMMA
+ j ASSIGN
+ 1SEMI
+
+	float i ASSIGN
+ 1SEMI
+
+	char c ASSIGN
+ 'e'SEMI
+
+RC
+lines=0        words=0        chars=0        space=0        test.c
