@@ -1,8 +1,13 @@
 %{
+	#include"tree.h"
+	#define YYSTYPE struct treeNode*
 	#include"syntax.tab.h"
     // just let you know you have macros!
     #define EXIT_OK 0
     #define EXIT_FAIL 1
+	
+	char tmp[20];
+	int line = 1;
 %}
 INT_DEC -?([1-9][0-9]{0,9}))
 INT_HEX -?(0[xX][1-9a-f][0-9a-f]{0,7})
@@ -14,43 +19,44 @@ FLOAT -?[0-9]*[.][0-9]+([eE][+-]?[0-9]*|[0])?f?
 CHAR '.*'
 TYPE (int)|(float)|(char)
 %%
-{TYPE} { printf("TYPE %s\n", yytext); return TYPE; }
-struct { printf("STRUCT\n"); return STRUCT; }
-if { printf("IF\n"); return IF; }
-else { printf("ELSE\n"); return ELSE; }
-while { printf("WHILE\n"); return WHILE; }
-return { printf("RETURN\n"); return RETURN; }
-{INT} { printf("INT %s\n", yytext); return INT; }
-{FLOAT} { printf("FLOAT %s\n", yytext); return FLOAT; }
-{ID} { printf("ID %s\n", yytext); return ID; }
-{CHAR} { printf("CHAR %s\n", yytext); return CHAR; }
-\. { printf("DOT\n"); return DOT; }
-; { printf("SEMI\n"); return SEMI; }
-, { printf("COMMA\n"); return COMMA; }
-= { printf("ASSIGN\n"); return ASSIGN; }
-\< { printf("LT\n"); return LT; }
-\<= { printf("LE\n"); return LE; }
-> { printf("GT\n"); return GT; }
->= { printf("GE\n"); return GE; }
-!= { printf("NE\n"); return NE; }
-== { printf("EQ\n"); return EQ; }
-\+ { printf("PLUS\n"); return PLUS; }
-- { printf("MINUS\n"); return MINUS; }
-\* { printf("MUL\n"); return MUL; }
-\/ { printf("DIV\n"); return DIV; }
-&& { printf("AND\n"); return AND; }
-\|\| { printf("OR\n"); return OR; }
-! { printf("NOT\n"); return NOT; }
-\( { printf("LP\n"); return LP; }
-\) { printf("RP\n"); return RP; }
-\[ { printf("LB\n"); return LB; }
-\] { printf("RB\n"); return RB; }
-\{ { printf("LC\n"); return LC; }
-\} { printf("RC\n"); return RC; }
-[ \n\r\t]+ {  }
+{TYPE} { sprintf(tmp, "TYPE %s", yytext); yylval = createLeaf(tmp); return TYPE; }
+struct { yylval = createLeaf("STRUCT"); return STRUCT; }
+if { yylval = createLeaf("IF"); return IF; }
+else { yylval = createLeaf("ELSE"); return ELSE; }
+while { yylval = createLeaf("WHILE"); return WHILE; }
+return { yylval = createLeaf("RETURN"); return RETURN; }
+{INT} { sprintf(tmp, "INT %s", yytext); yylval = createLeaf(tmp); return INT; }
+{FLOAT} { sprintf(tmp, "FLOAT %s", yytext); yylval = createLeaf(tmp); return FLOAT; }
+{ID} { sprintf(tmp, "ID %s", yytext); yylval = createLeaf(tmp); return ID; }
+{CHAR} { sprintf(tmp, "CHAR %s", yytext); yylval = createLeaf(tmp); return CHAR; }
+\. { yylval = createLeaf("DOT"); return DOT; }
+; { yylval = createLeaf("SEMI"); return SEMI; }
+, { yylval = createLeaf("COMMA"); return COMMA; }
+= { yylval = createLeaf("ASSIGN"); return ASSIGN; }
+\< { yylval = createLeaf("LT"); return LT; }
+\<= { yylval = createLeaf("LE"); return LE; }
+> { yylval = createLeaf("GT"); return GT; }
+>= { yylval = createLeaf("GE"); return GE; }
+!= { yylval = createLeaf("NE"); return NE; }
+== { yylval = createLeaf("EQ"); return EQ; }
+\+ { yylval = createLeaf("PLUS"); return PLUS; }
+- { yylval = createLeaf("MINUS"); return MINUS; }
+\* { yylval = createLeaf("MUL"); return MUL; }
+\/ { yylval = createLeaf("DIV"); return DIV; }
+&& { yylval = createLeaf("AND"); return AND; }
+\|\| { yylval = createLeaf("OR"); return OR; }
+! { yylval = createLeaf("NOT"); return NOT; }
+\( { yylval = createLeaf("LP"); return LP; }
+\) { yylval = createLeaf("RP"); return RP; }
+\[ { yylval = createLeaf("LB"); return LB; }
+\] { yylval = createLeaf("RB"); return RB; }
+\{ { yylval = createLeaf("LC"); return LC; }
+\} { yylval = createLeaf("RC"); return RC; }
+[ \r\t]+ {  }
+[\n] { line++; }
 . { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
 %%
-#ifndef SYN
+#ifndef MYTREE
 int main(int argc, char **argv){
     char *file_path;
     if(argc < 2){

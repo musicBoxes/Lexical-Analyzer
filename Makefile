@@ -13,6 +13,6 @@ la_test:
 syn:
 	$(FLEX) lex.l
 	$(BISON) -t -d syntax.y
-	$(CC) syntax.tab.c -lfl -ly -o syn.out
+	$(CC) -w syntax.tab.c -lfl -ly -o syn.out
 syn_test:
 	./syn.out < test_syn.c

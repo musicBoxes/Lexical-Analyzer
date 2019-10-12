@@ -1,24 +1,13 @@
-#include<string.h>
-#include<stdlib.h>
-#inllude<stdio.h>
+#include "tree.h"
 
-struct treeNode
-{
-	int tag;
-	char *value;
-	int childNum;
-	struct treeNode *child[8];
-}
-
-struct treeNode *createLeaf(int tag, char *text)
+struct treeNode *createLeaf(char *text)
 {
 	struct treeNode *node = (struct treeNode*)malloc(sizeof(struct treeNode));
 	node->childNum = 0;
-	node->tag = tag;
-	if (tag == ID || tag == NUM)
+	if (text != NULL)
 	{
 		node->value=(char*)malloc(sizeof(char)*strlen(text));
-		strcpy(node->value,text);
+		strcpy(node->value, text);
 	}
 	else
 	{
@@ -27,11 +16,10 @@ struct treeNode *createLeaf(int tag, char *text)
 	return node;
 }
  
-struct treeNode *createNode(int tag, int childNum, struct treeNode *a[])
+struct treeNode *createNode(int childNum, struct treeNode *a[])
 {
 	struct treeNode *node = (struct treeNode*)malloc(sizeof(struct treeNode));
 	node->childNum = childNum;
-	node->tag = tag;
 	node->value = NULL;
 	for (int i = 0; i < node->childNum; i ++)
 		(node->child)[i] = a[i];
@@ -40,9 +28,8 @@ struct treeNode *createNode(int tag, int childNum, struct treeNode *a[])
  
 struct treeNode *createEmpty()
 {
-	struct treeNode *node=(struct treeNode*)malloc(sizeof(struct Node));
+	struct treeNode *node=(struct treeNode*)malloc(sizeof(struct treeNode));
 	node->childNum=0;
-	node->tag=EPS;
 	node->value=NULL;
  
 	return node;
@@ -56,10 +43,13 @@ void treePrintLevel(struct treeNode *node, int lvl)
 			printf("-");
 		
 		if(node->value==NULL)
-			printf("<%d,->\n", node->tag);
+		{
+			
+		}
 		else 
-			printf("<%d,%s>\n", node->tag, node->value);
-		
+		{
+			printf("%s\n", node->value);
+		}
 		for (i=0; i<node->childNum; i++) {  
 			treePrintLevel((node->child)[i], lvl+1);
 		}

@@ -1,9 +1,9 @@
 %{
-	#define SYN
+	#include "tree.h"
+	#define YYSTYPE struct treeNode*
     #include "lex.yy.c"
-	#include "tree.c"
-	int cnt = 0;
-	char ans[1024][256];
+	int childNum, tag;
+	struct treeNode* childNodeList[8];
 	void yyerror(char*);
 %}
 %token ID CHAR FLOAT INT
@@ -11,98 +11,88 @@
 %token DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ 
 %token PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC 
 %%
-Program: ExtDefList { sprintf(ans[cnt++], "Program(%d)\n", yylineno); }
+Program: ExtDefList { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Program", line); treePrint($$); }
     ;
-ExtDefList: ExtDef ExtDefList { sprintf(ans[cnt++], "ExtDef(%d)\n", yylineno); }
-    | 
+ExtDefList: ExtDef ExtDefList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "ExtDefList", line); }
+    |  { childNum = 1; childNodeList[0]=createEmpty(); $$=createNode(childNum, childNodeList, "ExtDefList", line); }
     ;
-ExtDef: Specifier ExtDecList SEMI { sprintf(ans[cnt++], "ExtDef(%d)\n", yylineno); }
-    | Specifier SEMI { sprintf(ans[cnt++], "ExtDef(%d)\n", yylineno); }
-    | Specifier FunDec CompSt { sprintf(ans[cnt++], "ExtDef(%d)\n", yylineno); }
+ExtDef: Specifier ExtDecList SEMI { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "ExtDef", line); }
+    | Specifier SEMI { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "ExtDef", line); }
+    | Specifier FunDec CompSt { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "ExtDef", line); }
     ;
-ExtDecList: VarDec { sprintf(ans[cnt++], "VarDec(%d)\n", yylineno); }
-    | VarDec COMMA ExtDecList { sprintf(ans[cnt++], "VarDec(%d)\n", yylineno); }
+ExtDecList: VarDec { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "ExtDecList", line); }
+    | VarDec COMMA ExtDecList { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "ExtDecList", line); }
     ;
-	
-Specifier: TYPE { sprintf(ans[cnt++], "Specifier(%d)\n", yylineno); }
-    | StructSpecifier { sprintf(ans[cnt++], "Specifier(%d)\n", yylineno); }
+Specifier: TYPE { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Specifier", line); }
+    | StructSpecifier { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Specifier", line); }
     ;
-StructSpecifier: STRUCT ID LC DefList RC { sprintf(ans[cnt++], "StructSpecifier(%d)\n", yylineno); }
-    | STRUCT ID { sprintf(ans[cnt++], "StructSpecifier(%d)\n", yylineno); }
+StructSpecifier: STRUCT ID LC DefList RC { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "StructSpecifier", line); }
+    | STRUCT ID { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "StructSpecifier", line); }
     ;
-	
-VarDec: ID { sprintf(ans[cnt++], "VarDec(%d)\n", yylineno); }
-    | VarDec LB INT RB { sprintf(ans[cnt++], "VarDec(%d)\n", yylineno); }
+VarDec: ID { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "VarDec", line); }
+    | VarDec LB INT RB { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "VarDec", line); }
     ;
-FunDec: ID LP VarList RP { sprintf(ans[cnt++], "FunDec(%d)\n", yylineno); }
-    | ID LP RP { sprintf(ans[cnt++], "FunDec(%d)\n", yylineno); }
+FunDec: ID LP VarList RP { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "FunDec", line); }
+    | ID LP RP { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "FunDec", line); }
     ;
-VarList: ParamDec COMMA VarList { sprintf(ans[cnt++], "VarList(%d)\n", yylineno); }
-    | ParamDec { sprintf(ans[cnt++], "VarList(%d)\n", yylineno); }
+VarList: ParamDec COMMA VarList { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "VarList", line); }
+    | ParamDec { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "VarList", line); }
     ;
-ParamDec: Specifier VarDec { sprintf(ans[cnt++], "ParamDec(%d)\n", yylineno); }
+ParamDec: Specifier VarDec { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "ParamDec", line); }
     ;
-	
-CompSt: LC DefList StmtList RC { sprintf(ans[cnt++], "CompSt(%d)\n", yylineno); }
+CompSt: LC DefList StmtList RC { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "CompSt", line); }
     ;
-StmtList: Stmt StmtList { sprintf(ans[cnt++], "StmtList(%d)\n", yylineno); }
-    | 
+StmtList: Stmt StmtList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "StmtList", line); }
+    |  { childNum = 1; childNodeList[0]=createEmpty(); $$=createNode(childNum, childNodeList, "StmtList", line); }
     ;
-Stmt: Exp SEMI { sprintf(ans[cnt++], "Stmt(%d)\n", yylineno); }
-    | CompSt { sprintf(ans[cnt++], "Stmt(%d)\n", yylineno); }
-    | RETURN Exp SEMI { sprintf(ans[cnt++], "Stmt(%d)\n", yylineno); }
-    | IF LP Exp RP Stmt { sprintf(ans[cnt++], "Stmt(%d)\n", yylineno); }
-    | IF LP Exp RP Stmt ELSE Stmt { sprintf(ans[cnt++], "Stmt(%d)\n", yylineno); }
-    | WHILE LP Exp RP Stmt { sprintf(ans[cnt++], "Stmt(%d)\n", yylineno); }
+Stmt: Exp SEMI { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "Stmt", line); }
+    | CompSt { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Stmt", line); }
+    | RETURN Exp SEMI { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Stmt", line); }
+    | IF LP Exp RP Stmt { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "Stmt", line); }
+    | IF LP Exp RP Stmt ELSE Stmt { childNum = 7; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; childNodeList[5]=$6; childNodeList[6]=$7; $$=createNode(childNum, childNodeList, "Stmt", line); }
+    | WHILE LP Exp RP Stmt { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "Stmt", line); }
     ;
-	
-DefList: Def DefList { sprintf(ans[cnt++], "DefList(%d)\n", yylineno); }
-    | 
+DefList: Def DefList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "DefList", line); }
+    |  { childNum = 1; childNodeList[0]=createEmpty(); $$=createNode(childNum, childNodeList, "DefList", line); }
     ;
-Def: Specifier DecList SEMI { sprintf(ans[cnt++], "Def(%d)\n", yylineno); }
+Def: Specifier DecList SEMI { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Def", line); }
     ;
-DecList: Dec
-    | Dec COMMA DecList { sprintf(ans[cnt++], "DecList(%d)\n", yylineno); }
+DecList: Dec { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "DecList", line); }
+    | Dec COMMA DecList { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "DecList", line); }
     ;
-Dec: VarDec
-    | VarDec ASSIGN Exp { sprintf(ans[cnt++], "Dec(%d)\n", yylineno); }
+Dec: VarDec { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Dec", line); }
+    | VarDec ASSIGN Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Dec", line); }
     ;
-	
-Exp: Exp ASSIGN Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp AND Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp OR Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp LT Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp LE Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp GT Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp GE Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp NE Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp EQ Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp PLUS Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp MINUS Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp MUL Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp DIV Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | LP Exp RP { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | MINUS Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | NOT Exp { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | ID LP Args RP { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | ID LP RP { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp LB Exp LB { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | Exp DOT ID { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | ID { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | INT { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | FLOAT { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
-    | CHAR { sprintf(ans[cnt++], "Exp(%d)\n", yylineno); }
+Exp: Exp ASSIGN Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp AND Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp OR Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp LT Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp LE Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp GT Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp GE Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp NE Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp EQ Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp PLUS Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp MINUS Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp MUL Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp DIV Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | LP Exp RP { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | MINUS Exp { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | NOT Exp { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | ID LP Args RP { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | ID LP RP { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp LB Exp LB { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | Exp DOT ID { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | ID { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | INT { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | FLOAT { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", line); }
+    | CHAR { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", line); }
     ;
-Args: Exp COMMA Args { sprintf(ans[cnt++], "Args(%d)\n", yylineno); }
-    | Exp { sprintf(ans[cnt++], "Args(%d)\n", yylineno); }
+Args: Exp COMMA Args { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Args", line); }
+    | Exp { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Args", line); }
     ;
 %%
 
 int main(){
-	//char input[1 << 16];
-	//scanf("%s", input);
-	//printf("%s", input);
     yyparse();
-	for (int i = 0 ; i < cnt ; i ++)
-		printf("%s", ans[i]);
 }

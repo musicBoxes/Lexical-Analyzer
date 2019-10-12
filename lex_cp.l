@@ -17,36 +17,36 @@ TYPE (int)|(float)|(char)
 {TYPE} { printf("TYPE %s\n", yytext); return TYPE; }
 struct { printf("STRUCT\n"); return STRUCT; }
 if { printf("IF\n"); return IF; }
-else { printf("ELSE\n"); }
-while { printf("WHILE\n"); }
-return { printf("RETURN\n"); }
-{INT} { printf("INT %s\n", yytext); }
-{FLOAT} { printf("FLOAT %s\n", yytext); }
-{ID} { printf("ID %s\n", yytext); }
-{CHAR} { printf("CHAR %s\n", yytext); }
-\. { printf("DOT\n"); }
-; { printf("SEMI\n"); }
-, { printf("COMMA\n"); }
-= { printf("ASSIGN\n"); }
-\< { printf("LT\n"); }
-\<= { printf("LE\n"); }
-> { printf("GT\n"); }
->= { printf("GE\n"); }
-!= { printf("NE\n"); }
-== { printf("EQ\n"); }
-\+ { printf("PLUS\n"); }
-- { printf("MINUS\n"); }
-\* { printf("MUL\n"); }
-\/ { printf("DIV\n"); }
-&& { printf("AND\n"); }
-\|\| { printf("OR\n"); }
-! { printf("NOT\n"); }
-\( { printf("LP\n"); }
-\) { printf("RP\n"); }
-\[ { printf("LB\n"); }
-\] { printf("RB\n"); }
-\{ { printf("LC\n"); }
-\} { printf("RC\n"); }
+else { printf("ELSE\n"); return ELSE; }
+while { printf("WHILE\n"); return WHILE; }
+return { printf("RETURN\n"); return RETURN; }
+{INT} { printf("INT %s\n", yytext); return INT; }
+{FLOAT} { printf("FLOAT %s\n", yytext); return FLOAT; }
+{ID} { printf("ID %s\n", yytext); return ID; }
+{CHAR} { printf("CHAR %s\n", yytext); return CHAR; }
+\. { printf("DOT\n"); return DOT; }
+; { printf("SEMI\n"); return SEMI; }
+, { printf("COMMA\n"); return COMMA; }
+= { printf("ASSIGN\n"); return ASSIGN; }
+\< { printf("LT\n"); return LT; }
+\<= { printf("LE\n"); return LE; }
+> { printf("GT\n"); return GT; }
+>= { printf("GE\n"); return GE; }
+!= { printf("NE\n"); return NE; }
+== { printf("EQ\n"); return EQ; }
+\+ { printf("PLUS\n"); return PLUS; }
+- { printf("MINUS\n"); return MINUS; }
+\* { printf("MUL\n"); return MUL; }
+\/ { printf("DIV\n"); return DIV; }
+&& { printf("AND\n"); return AND; }
+\|\| { printf("OR\n"); return OR; }
+! { printf("NOT\n"); return NOT; }
+\( { printf("LP\n"); return LP; }
+\) { printf("RP\n"); return RP; }
+\[ { printf("LB\n"); return LB; }
+\] { printf("RB\n"); return RB; }
+\{ { printf("LC\n"); return LC; }
+\} { printf("RC\n"); return RC; }
 [ \n\r\t]+ {  }
 . { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
 %%
