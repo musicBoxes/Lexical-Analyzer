@@ -1,3 +1,4 @@
 *.out
 lex.yy.c
 res.txt
+syntax.tab.*

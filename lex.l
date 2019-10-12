@@ -1,61 +1,56 @@
 %{
+	#include"syntax.tab.h"
     // just let you know you have macros!
     #define EXIT_OK 0
     #define EXIT_FAIL 1
-
-    // and global variables
-    int chars = 0;
-    int words = 0;
-    int lines = 0;
-	int spaces = 0;
 %}
+INT_DEC -?([1-9][0-9]{0,9}))
+INT_HEX -?(0[xX][1-9a-f][0-9a-f]{0,7})
+INT_ INT_DEC|INT_HEX
+%option yylineno
 ID [a-zA-Z_]([a-zA-Z_]|[0-9])*
-INT_DEC (-?)(([1-9][0-9]{0,9}))
-INT_HEX (-?)(0[xX][1-9a-f][0-9a-f]{0,7}))
-INT INT_DEC|INT_HEX
-FLOAT -?(1-9)(0-9)*.(0-9)*
+INT -?([1-9][0-9]{0,9}|[0])|(0[xX][1-9a-f][0-9a-f]{0,7}|[0])
+FLOAT -?[0-9]*[.][0-9]+([eE][+-]?[0-9]*|[0])?f?
 CHAR '.*'
-TYPE [int|float|char]
+TYPE (int)|(float)|(char)
 %%
-ID { printf("ID %s\n", yytext); }
-INT { 
-//char *str = yytext;
-//while (*str != 0)	{ printf("char:%c %d\n", *str, *str); str++; }
-printf("INT %s\n", yytext); 
-}
-FLOAT { printf("FLOAT %s\n", yytext); }
-CHAR { printf("CHAR %s\n", yytext); }
-TYPE { printf("TYPE %s\n", yytext); }
-struct { printf("STRUCT\n"); }
-if { printf("IF\n"); }
-else { printf("ELSE\n"); }
-while { printf("WHILE\n"); }
-return { printf("RETURN\n"); }
-\. { printf("DOT\n"); }
-; { printf("SEMI\n"); }
-, { printf("COMMA\n"); }
-= { printf("ASSIGN\n"); }
-\< { printf("LT\n"); }
-\<= { printf("LE\n"); }
-> { printf("GT\n"); }
->= { printf("GE\n"); }
-!= { printf("NE\n"); }
-== { printf("EQ\n"); }
-\+ { printf("PLUS\n"); }
-- { printf("MINUS\n"); }
-\* { printf("MUL\n"); }
-\/ { printf("DIV\n"); }
-&& { printf("AND\n"); }
-\|\| { printf("OR\n"); }
-! { printf("NOT\n"); }
-\( { printf("LP\n"); }
-\) { printf("RP\n"); }
-\[ { printf("LB\n"); }
-\] { printf("RB\n"); }
-\{ { printf("LC\n"); }
-\} { printf("RC\n"); }
-\S { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
+{TYPE} { printf("TYPE %s\n", yytext); return TYPE; }
+struct { printf("STRUCT\n"); return STRUCT; }
+if { printf("IF\n"); return IF; }
+else { printf("ELSE\n"); return ELSE; }
+while { printf("WHILE\n"); return WHILE; }
+return { printf("RETURN\n"); return RETURN; }
+{INT} { printf("INT %s\n", yytext); return INT; }
+{FLOAT} { printf("FLOAT %s\n", yytext); return FLOAT; }
+{ID} { printf("ID %s\n", yytext); return ID; }
+{CHAR} { printf("CHAR %s\n", yytext); return CHAR; }
+\. { printf("DOT\n"); return DOT; }
+; { printf("SEMI\n"); return SEMI; }
+, { printf("COMMA\n"); return COMMA; }
+= { printf("ASSIGN\n"); return ASSIGN; }
+\< { printf("LT\n"); return LT; }
+\<= { printf("LE\n"); return LE; }
+> { printf("GT\n"); return GT; }
+>= { printf("GE\n"); return GE; }
+!= { printf("NE\n"); return NE; }
+== { printf("EQ\n"); return EQ; }
+\+ { printf("PLUS\n"); return PLUS; }
+- { printf("MINUS\n"); return MINUS; }
+\* { printf("MUL\n"); return MUL; }
+\/ { printf("DIV\n"); return DIV; }
+&& { printf("AND\n"); return AND; }
+\|\| { printf("OR\n"); return OR; }
+! { printf("NOT\n"); return NOT; }
+\( { printf("LP\n"); return LP; }
+\) { printf("RP\n"); return RP; }
+\[ { printf("LB\n"); return LB; }
+\] { printf("RB\n"); return RB; }
+\{ { printf("LC\n"); return LC; }
+\} { printf("RC\n"); return RC; }
+[ \n\r\t]+ {  }
+. { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
 %%
+#ifndef SYN
 int main(int argc, char **argv){
     char *file_path;
     if(argc < 2){
@@ -69,7 +64,6 @@ int main(int argc, char **argv){
             return EXIT_FAIL;
         }
         yylex();
-        printf("lines=%-8d words=%-8d chars=%-8d space=%-8d %s\n", lines, words, chars, spaces, file_path);
         return EXIT_OK;
     }
     else{
@@ -77,3 +71,4 @@ int main(int argc, char **argv){
         return EXIT_FAIL;
     }
 }
+#endif
