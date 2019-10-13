@@ -7,7 +7,8 @@
     #define EXIT_FAIL 1
 	
 	char tmp[20];
-	int line = 1;
+	int line = 01;
+	int error = 0;
 %}
 INT_DEC -?([1-9][0-9]{0,9}))
 INT_HEX -?(0[xX][1-9a-f][0-9a-f]{0,7})
@@ -19,16 +20,16 @@ FLOAT -?[0-9]*[.][0-9]+([eE][+-]?[0-9]*|[0])?f?
 CHAR '.*'
 TYPE (int)|(float)|(char)
 %%
-{TYPE} { sprintf(tmp, "TYPE %s", yytext); yylval = createLeaf(tmp); return TYPE; }
+{TYPE} { sprintf(tmp, "TYPE: %s", yytext); yylval = createLeaf(tmp); return TYPE; }
 struct { yylval = createLeaf("STRUCT"); return STRUCT; }
 if { yylval = createLeaf("IF"); return IF; }
 else { yylval = createLeaf("ELSE"); return ELSE; }
 while { yylval = createLeaf("WHILE"); return WHILE; }
 return { yylval = createLeaf("RETURN"); return RETURN; }
-{INT} { sprintf(tmp, "INT %s", yytext); yylval = createLeaf(tmp); return INT; }
-{FLOAT} { sprintf(tmp, "FLOAT %s", yytext); yylval = createLeaf(tmp); return FLOAT; }
-{ID} { sprintf(tmp, "ID %s", yytext); yylval = createLeaf(tmp); return ID; }
-{CHAR} { sprintf(tmp, "CHAR %s", yytext); yylval = createLeaf(tmp); return CHAR; }
+{INT} { sprintf(tmp, "INT: %s", yytext); yylval = createLeaf(tmp); return INT; }
+{FLOAT} { sprintf(tmp, "FLOAT: %s", yytext); yylval = createLeaf(tmp); return FLOAT; }
+{ID} { sprintf(tmp, "ID: %s", yytext); yylval = createLeaf(tmp); return ID; }
+{CHAR} { sprintf(tmp, "CHAR: %s", yytext); yylval = createLeaf(tmp); return CHAR; }
 \. { yylval = createLeaf("DOT"); return DOT; }
 ; { yylval = createLeaf("SEMI"); return SEMI; }
 , { yylval = createLeaf("COMMA"); return COMMA; }
@@ -54,7 +55,7 @@ return { yylval = createLeaf("RETURN"); return RETURN; }
 \} { yylval = createLeaf("RC"); return RC; }
 [ \r\t]+ {  }
 [\n] { line++; }
-. { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
+. { error = 1; printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
 %%
 #ifndef MYTREE
 int main(int argc, char **argv){

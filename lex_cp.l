@@ -11,7 +11,7 @@ INT_ INT_DEC|INT_HEX
 ID [a-zA-Z_]([a-zA-Z_]|[0-9])*
 INT -?([1-9][0-9]{0,9}|[0])|(0[xX][1-9a-f][0-9a-f]{0,7}|[0])
 FLOAT -?[0-9]*[.][0-9]+([eE][+-]?[0-9]*|[0])?f?
-CHAR '.*'
+CHAR '.|(\\x[0-9a-f]{1,2})'
 TYPE (int)|(float)|(char)
 %%
 {TYPE} { printf("TYPE %s\n", yytext); return TYPE; }

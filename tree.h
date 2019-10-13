@@ -39,7 +39,7 @@ struct treeNode *createNode(int childNum, struct treeNode *a[], char *value, int
 	node->childNum = childNum;
 	node->value=(char*)malloc(sizeof(char)*(strlen(value)+12));
 	memset(node->value, 0, sizeof(char)*(strlen(value)+12));
-	sprintf(node->value, "%s(%d)", value, lineno);
+	sprintf(node->value, "%s (%d)", value, lineno);
 	for (int i = 0; i < node->childNum; i ++)
 		(node->child)[i] = a[i];
 	return node;
@@ -55,21 +55,14 @@ struct treeNode *createEmpty()
  
 void treePrintLevel(struct treeNode *node, int depth)
 {
-	if (node != NULL)
-	{	
-		if(node->value==NULL)
-		{
-			//printf("value is NULL.\n");
-		}
-		else 
-		{
-			for(int i = 0; i < 4*depth; i ++) printf(" ");
-			printf("%s\n", node->value);
-		}
-		for (int i = 0; i < node->childNum; i ++) {  
-			treePrintLevel((node->child)[i], depth+1);
-		}
-	}
+	if (node == NULL 
+		|| node->value==NULL 
+		|| (node->childNum == 1 && (node->child)[0]->value==NULL)) return;
+	
+	for (int i = 0; i < 2*depth; i ++) printf(" ");
+	printf("%s\n", node->value, node->childNum);
+	for (int i = 0; i < node->childNum; i ++)   
+		treePrintLevel((node->child)[i], depth+1);
 }
  
 void treePrint(struct treeNode *node)
