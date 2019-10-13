@@ -7,8 +7,14 @@
     #define EXIT_FAIL 1
 	
 	char tmp[20];
-	int line = 01;
-	int error = 0;
+	
+	int yycolno = 1;
+	#define YY_USER_ACTION \
+	yylloc.first_line = yylineno; \
+	yylloc.first_column = yycolno; \
+	yylloc.last_line = yylineno; \
+	yylloc.last_column = yycolno + yyleng; \
+	yycolno += yyleng;
 %}
 INT_DEC -?([1-9][0-9]{0,9}))
 INT_HEX -?(0[xX][1-9a-f][0-9a-f]{0,7})
@@ -54,8 +60,8 @@ return { yylval = createLeaf("RETURN"); return RETURN; }
 \{ { yylval = createLeaf("LC"); return LC; }
 \} { yylval = createLeaf("RC"); return RC; }
 [ \r\t]+ {  }
-[\n] { line++; }
-. { error = 1; printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
+[\n] { yycolno = 1; }
+. { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); return ERROR_TYPE_A; }
 %%
 #ifndef MYTREE
 int main(int argc, char **argv){
