@@ -5,5 +5,10 @@ for i in range(1, 11):
 	val = os.system("diff ./test_result/test_1_r%02d.out ./test/test_1_r%02d.out > tmp.txt"%(i, i))
 	if (val == 0):
 		print("Pass!")
+	elif (val == 256):
+		print("Fail!")
+		f = open("./test_result/test_1_r%02d.out"%(i))
+		for line in f:
+			print(line.strip("\n"))
 	else:
 		print("Fail!")

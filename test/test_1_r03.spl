@@ -6,4 +6,5 @@ int test_1_r03()
     return 1
   }
   return @;
+  return $
 }

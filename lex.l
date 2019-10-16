@@ -61,7 +61,7 @@ return { yylval = createLeaf("RETURN"); return RETURN; }
 \} { yylval = createLeaf("RC"); return RC; }
 [ \r\t]+ {  }
 [\n] { yycolno = 1; }
-. { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); return ERROR_TYPE_A; }
+. { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
 %%
 #ifndef MYTREE
 int main(int argc, char **argv){

@@ -3,6 +3,7 @@
 	#define YYSTYPE struct treeNode*
     #include "lex.yy.c"
 	int childNum;
+	int error_flag = 0;
 	char errmsg[100];
 	struct treeNode* childNodeList[8];
 	void yyerror(char*);
@@ -11,11 +12,10 @@
 %token TYPE STRUCT IF ELSE WHILE RETURN 
 %token DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ 
 %token PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC 
-%token ERROR_TYPE_A
 %right ASSIGN NOT
 %left OR AND LT LE GT GE EQ NE ADD SUB MUL DIV DOT LB RB LP RP
 %%
-Program: ExtDefList { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Program", @$.first_line); treePrint($$); }
+Program: ExtDefList { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Program", @$.first_line); if (!error_flag) treePrint($$); }
     ;
 ExtDefList: ExtDef ExtDefList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "ExtDefList", @$.first_line); }
     |  { $$=createEmpty(); }
@@ -45,7 +45,7 @@ VarList: ParamDec COMMA VarList { childNum = 3; childNodeList[0]=$1; childNodeLi
 ParamDec: Specifier VarDec { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "ParamDec", @$.first_line); }
     ;
 CompSt: LC DefList StmtList RC { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "CompSt", @$.first_line); }
-    | LC DefList StmtList error { sprintf(errmsg, "Error type B at Line %d: LC DefList StmtList error\n", @$.first_line); yyerror(errmsg); }
+    | LC DefList StmtList error { printf("Error type B at Line %d: LC DefList StmtList error\n", @$.first_line); /*yyerror(errmsg);*/ }
     ;
 StmtList: Stmt StmtList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "StmtList", @$.first_line); }
     |  { $$=createEmpty(); }
@@ -56,8 +56,9 @@ Stmt: Exp SEMI { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=crea
     | IF LP Exp RP Stmt { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
     | IF LP Exp RP Stmt ELSE Stmt { childNum = 7; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; childNodeList[5]=$6; childNodeList[6]=$7; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
     | WHILE LP Exp RP Stmt { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
-    | Exp error { sprintf(errmsg, "Error type B at Line %d: Exp error\n", @$.first_line); yyerror(errmsg); }
-	| RETURN Exp error { sprintf(errmsg, "Error type B at Line %d: Exp error\n", @$.first_line); yyerror(errmsg); } 
+    | Exp error { printf("Error type B at Line %d: Exp error\n", @$.first_line); yyerrok; /*yyerror(errmsg);*/ }
+	| RETURN Exp error { printf("Error type B at Line %d: Exp error\n", @$.first_line); yyerrok; /*yyerror(errmsg);*/ } 
+//	| RETURN error SEMI { printf("Error type B at Line %d: RETURN error SEMI\n", @$.first_line); /*yyerrok;*/ /*yyerror(errmsg);*/ } 
 	;
 DefList: Def DefList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "DefList", @$.first_line); }
     |  { $$=createEmpty(); }
@@ -69,7 +70,8 @@ DecList: Dec { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childN
     ;
 Dec: VarDec { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Dec", @$.first_line); }
     | VarDec ASSIGN Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Dec", @$.first_line); }
-    ;
+//	| VarDec ASSIGN error { printf("Error type B at Line %d: VarDec ASSIGN error\n", @$.first_line); /*yyerror(errmsg);*/ yyerrok; }
+	;
 Exp: Exp ASSIGN Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", @$.first_line); }
     | Exp AND Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", @$.first_line); }
     | Exp OR Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Exp", @$.first_line); }
@@ -94,7 +96,9 @@ Exp: Exp ASSIGN Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; ch
     | INT { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", @$.first_line); }
     | FLOAT { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", @$.first_line); }
     | CHAR { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Exp", @$.first_line); }
-    | ID LP Args error { sprintf(errmsg, "Error type B at Line %d: ID LP Args error\n", @$.first_line); yyerror(errmsg); }
+    | ID LP Args error { printf("Error type B at Line %d: ID LP Args error\n", @$.first_line); /*yyerror(errmsg);*/ yyerrok; }
+	| Exp ASSIGN error { printf("Error type B at Line %d: Exp ASSIGN error\n", @$.first_line); /*yyerror(errmsg);*/ yyerrok; }
+	| error { /*printf("Exp error\n"); yyerrok;*/ }
 	;
 Args: Exp COMMA Args { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Args", @$.first_line); }
     | Exp { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Args", @$.first_line); }
@@ -102,7 +106,7 @@ Args: Exp COMMA Args { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; c
 %%
 
 void yyerror(char* s){
-	printf("%s\n", s);
+	//printf("%s\n", s);
 }
 
 int main(){
