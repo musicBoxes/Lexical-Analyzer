@@ -17,15 +17,19 @@
 	yycolno += yyleng;
 %}
 INT_DEC -?([1-9][0-9]{0,9}))
-INT_HEX -?(0[xX][1-9a-f][0-9a-f]{0,7})
+INT_HEX -?(0[xX][1-9a-fA-F][0-9a-fA-F]{0,7})
 INT_ INT_DEC|INT_HEX
 %option yylineno
+ILLEGAL_SET [^ \n\r\t\(\);,!&\.\*\[\]\|\<>=\+-]
 ID [a-zA-Z_]([a-zA-Z_]|[0-9])*
-INT -?([0-9]{1,10})|(0[xX][0-9a-f]{1,8})
+INT -?([0-9]{1,10})|(0[xX][0-9a-fA-F]{1,8})
+ERROR_INT -?([0-9]{11,})|(0[xX][0-9a-zA-Z]{1,})
 FLOAT -?[0-9]*[.][0-9]+([eE][+-]?[0-9]*|[0])?f?
-CHAR ('.')|('0[xX][0-9a-f]{1,2}') 
+CHAR ('.')|('\\[xX][0-9a-fA-F]{1,2}') 
 TYPE (int)|(float)|(char)
 %%
+\/\/ { char c; while(c=input() != '\n'); }
+"/*" { char c; while(c=input()) { if (c == '*') { c=input(); if (c=='/') break; else unput(c);} } }
 {TYPE} { sprintf(tmp, "TYPE: %s", yytext); yylval = createLeaf(tmp); return TYPE; }
 struct { yylval = createLeaf("STRUCT"); return STRUCT; }
 if { yylval = createLeaf("IF"); return IF; }
@@ -59,9 +63,11 @@ return { yylval = createLeaf("RETURN"); return RETURN; }
 \] { yylval = createLeaf("RB"); return RB; }
 \{ { yylval = createLeaf("LC"); return LC; }
 \} { yylval = createLeaf("RC"); return RC; }
+\/\* { return CS; }
+\*\/ { return CE; }
 [ \r\t]+ {  }
 [\n] { yycolno = 1; }
-. { printf("Error type A at line %d: Unknown characters \'%s\' \n", yylineno, yytext); }
+[^ \n\r\t\(\)\.;,!&\*\[\]\|\<>=\+-]* { printf("Error type A at line %d: Unknown lexeme \"%s\" \n", yylineno, yytext); }
 %%
 #ifndef MYTREE
 int main(int argc, char **argv){
