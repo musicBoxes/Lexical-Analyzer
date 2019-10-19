@@ -27,14 +27,21 @@ ERROR_INT -?([0-9]{11,})|(0[xX][0-9a-zA-Z]{1,})
 FLOAT -?[0-9]*[.][0-9]+([eE][+-]?[0-9]*|[0])?f?
 CHAR ('.')|('\\[xX][0-9a-fA-F]{1,2}') 
 TYPE (int)|(float)|(char)
+C1 [/]
+C2 [*]
+C3 [^*/]
+MULTILINE_COMMENT "/*"{C1}*({C3}{C1}*|{C2}|{C3})*"*/"
+ERROR_MULTILINE_COMMENT "/*"{C1}*({C3}{C1}*|{C2}|{C3})*"*/"
 %%
-\/\/ { char c; while(c=input() != '\n'); }
-"/*" { char c; while(c=input()) { if (c == '*') { c=input(); if (c=='/') break; else unput(c);} } }
+\/\/[^\r\n]* {  }
+{MULTILINE_COMMENT} {  }
+{ERROR_MULTILINE_COMMENT} { printf("Error type B at line %d: Missing \"/*\"\n", yylineno); }
 {TYPE} { sprintf(tmp, "TYPE: %s", yytext); yylval = createLeaf(tmp); return TYPE; }
 struct { yylval = createLeaf("STRUCT"); return STRUCT; }
 if { yylval = createLeaf("IF"); return IF; }
 else { yylval = createLeaf("ELSE"); return ELSE; }
 while { yylval = createLeaf("WHILE"); return WHILE; }
+for { yylval = createLeaf("FOR"); return FOR; }
 return { yylval = createLeaf("RETURN"); return RETURN; }
 {INT} { sprintf(tmp, "INT: %s", yytext); yylval = createLeaf(tmp); return INT; }
 {FLOAT} { sprintf(tmp, "FLOAT: %s", yytext); yylval = createLeaf(tmp); return FLOAT; }
@@ -67,7 +74,7 @@ return { yylval = createLeaf("RETURN"); return RETURN; }
 \*\/ { return CE; }
 [ \r\t]+ {  }
 [\n] { yycolno = 1; }
-[^ \n\r\t\(\)\.;,!&\*\[\]\|\<>=\+-]* { printf("Error type A at line %d: Unknown lexeme \"%s\" \n", yylineno, yytext); }
+[^ \n\r\t\(\)\.\{\};,!&\*\[\]\|\<>=\+-]* { printf("Error type A at line %d: Unknown lexeme \"%s\" \n", yylineno, yytext); }
 %%
 #ifndef MYTREE
 int main(int argc, char **argv){

@@ -8,7 +8,7 @@ struct treeNode
 {
 	char *value;
 	int childNum;
-	struct treeNode *child[8];
+	struct treeNode *child[10];
 };
 
 struct treeNode *createLeaf(char *text);

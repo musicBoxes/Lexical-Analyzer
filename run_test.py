@@ -21,3 +21,5 @@ for i in range(1, 4):
 	cmd = "./syn.out < ./test/test_1_o%02d.spl > ./test_result/test_1_o%02d.out"%(i, i)
 	# print(cmd)
 	os.system(cmd)
+cmd = "./syn.out < ./test/for_test.spl > ./test_result/for_test.out"
+os.system(cmd)

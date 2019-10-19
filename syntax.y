@@ -5,11 +5,11 @@
 	int childNum;
 	int error_flag = 0;
 	char errmsg[100];
-	struct treeNode* childNodeList[8];
+	struct treeNode* childNodeList[10];
 	void yyerror(char*);
 %}
 %token TYPE ID CHAR FLOAT INT
-%token STRUCT IF ELSE WHILE RETURN 
+%token STRUCT IF ELSE WHILE FOR RETURN 
 %token DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ 
 %token PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC 
 %token CS CE
@@ -49,7 +49,7 @@ ParamDec: Specifier VarDec { childNum = 2; childNodeList[0]=$1; childNodeList[1]
     ;
 CompSt: LC DefList StmtList RC { childNum = 4; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; $$=createNode(childNum, childNodeList, "CompSt", @$.first_line); }
 	| LC DefList StmtList error { printf("Error type B at Line %d: Missing \"}\"\n", @$.first_line); error_flag = 1; }
-//	| LC DefList StmtList error RC { printf("Error type B at Line %d: Definition must at head.\n", @$.first_line); error_flag = 1; }
+//	| LC DefList StmtList Def RC { printf("Error type B at Line %d: Definition must at head.\n", @$.first_line); error_flag = 1; }
 	;
 StmtList: Stmt StmtList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "StmtList", @$.first_line); }
     |  { $$=createEmpty(); }
@@ -60,9 +60,11 @@ Stmt: Exp SEMI { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=crea
     | IF LP Exp RP Stmt { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
     | IF LP Exp RP Stmt ELSE Stmt { childNum = 7; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; childNodeList[5]=$6; childNodeList[6]=$7; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
     | WHILE LP Exp RP Stmt { childNum = 5; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
-//    | Exp error { printf("Error type B at Line %d: Exp error\n", @$.first_line); error_flag = 1; }
+//	| Exp error { printf("Error type B at Line %d: Exp error\n", @$.first_line); error_flag = 1; }
 	| RETURN Exp error { printf("Error type B at Line %d: Missing \";\"\n", @$.first_line); error_flag = 1; } 
 //	| RETURN error SEMI { printf("Error type B at Line %d: RETURN error SEMI\n", @$.first_line); error_flag = 1; } 
+	| FOR LP Def ExpListEx SEMI ExpListEx RP Stmt { childNum = 8; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; childNodeList[5]=$6; childNodeList[6]=$7; childNodeList[7]=$8; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
+	| FOR LP ExpListEx SEMI ExpListEx SEMI ExpListEx RP Stmt { childNum = 9; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; childNodeList[3]=$4; childNodeList[4]=$5; childNodeList[5]=$6; childNodeList[6]=$7; childNodeList[7]=$8; childNodeList[8]=$9; $$=createNode(childNum, childNodeList, "Stmt", @$.first_line); }
 	;
 DefList: Def DefList { childNum = 2; childNodeList[0]=$1; childNodeList[1]=$2; $$=createNode(childNum, childNodeList, "DefList", @$.first_line); }
     |  { $$=createEmpty(); }
@@ -104,6 +106,12 @@ Exp: Exp ASSIGN Exp { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; ch
     | ID LP Args error { printf("Error type B at Line %d: Missing \")\"\n", @$.first_line); error_flag = 1; }
 //	| Exp ASSIGN error { printf("Error type B at Line %d: Exp ASSIGN error\n", @$.first_line); error_flag = 1; } // 20 reduce/reduce conflicts
 	| error { /*printf("error\n"); yyerrok;*/ error_flag = 1; }
+	;
+ExpList: Exp { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "ExpList", @$.first_line); }
+	| Exp COMMA ExpList { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "ExpList", @$.first_line); }
+	;
+ExpListEx: ExpList { $$=$1; }
+	| { $$ = createEmpty(); }
 	;
 Args: Exp COMMA Args { childNum = 3; childNodeList[0]=$1; childNodeList[1]=$2; childNodeList[2]=$3; $$=createNode(childNum, childNodeList, "Args", @$.first_line); }
     | Exp { childNum = 1; childNodeList[0]=$1; $$=createNode(childNum, childNodeList, "Args", @$.first_line); }

@@ -12,10 +12,5 @@ la_test:
 	./la.out test_lex.c > res.txt
 syn:
 	$(FLEX) lex.l
-	$(BISON) -t -d syntax.y
+	$(BISON) -t -d -v syntax.y
 	$(CC) -w syntax.tab.c -lfl -ly -o syn.out
-syn_test:
-	for i in {1..10}
-	do
-		./syn.out < ./test/test_1_r$i.c > ./test_result/test_1_r$i.out
-	done
