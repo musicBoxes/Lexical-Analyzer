@@ -2,15 +2,12 @@ CC=gcc
 FLEX=flex
 BISON=bison
 
-la:
+lexical:
 	$(FLEX) lex.l
-	$(CC) lex.yy.c -lfl -o la.out
+	$(CC) lex.yy.c -lfl -o lexical.out
 clean:
-	@rm -f syntax.tab.* *.out
-la_test:
-	./la.out test_lex.c
-	./la.out test_lex.c > res.txt
+	@rm -f syntax.tab.* *.out *.output
 syn:
 	$(FLEX) lex.l
 	$(BISON) -t -d -v syntax.y
-	$(CC) -w syntax.tab.c -lfl -ly -o syn.out
+	$(CC) -w syntax.tab.c -lfl -ly -o syntax.out

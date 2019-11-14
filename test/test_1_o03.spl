@@ -5,8 +5,12 @@ comment
 **/
 int /*func*/test_1_o03(int m,//)
 int n)
-{/*legal comment*/ /* also legal /* also legal */ /* legal comment*/ illegal */
+{/*legal comment*/ 
+/* also legal /* also legal */ 
+/* legal comment /* legal comment */ 
+illegal */ int [//;
   int max;
+  return 1;
   if (m > /*inline comment*/n)
   {
     max = m;

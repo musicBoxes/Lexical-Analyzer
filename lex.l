@@ -15,6 +15,8 @@
 	yylloc.last_line = yylineno; \
 	yylloc.last_column = yycolno + yyleng; \
 	yycolno += yyleng;
+	
+	extern int error_flag;
 %}
 INT_DEC -?([1-9][0-9]{0,9}))
 INT_HEX -?(0[xX][1-9a-fA-F][0-9a-fA-F]{0,7})
@@ -30,12 +32,13 @@ TYPE (int)|(float)|(char)
 C1 [/]
 C2 [*]
 C3 [^*/]
+C4 [^/]
 MULTILINE_COMMENT "/*"{C1}*({C3}{C1}*|{C2}|{C3})*"*/"
-ERROR_MULTILINE_COMMENT "/*"{C1}*({C3}{C1}*|{C2}|{C3})*"*/"
+ERROR_MULTILINE_COMMENT {MULTILINE_COMMENT}({C4}{C2}*|({C1}*{C3})|{C3})*"*/"
 %%
 \/\/[^\r\n]* {  }
 {MULTILINE_COMMENT} {  }
-{ERROR_MULTILINE_COMMENT} { printf("Error type B at line %d: Missing \"/*\"\n", yylineno); }
+{ERROR_MULTILINE_COMMENT} { printf("Error type B at Line %d: Missing \"/*\"\n", yylineno); error_flag = 1; }
 {TYPE} { sprintf(tmp, "TYPE: %s", yytext); yylval = createLeaf(tmp); return TYPE; }
 struct { yylval = createLeaf("STRUCT"); return STRUCT; }
 if { yylval = createLeaf("IF"); return IF; }
@@ -74,7 +77,8 @@ return { yylval = createLeaf("RETURN"); return RETURN; }
 \*\/ { return CE; }
 [ \r\t]+ {  }
 [\n] { yycolno = 1; }
-[^ \n\r\t\(\)\.\{\};,!&\*\[\]\|\<>=\+-]* { printf("Error type A at line %d: Unknown lexeme \"%s\" \n", yylineno, yytext); }
+[^ \n\r\t\(\)\.\{\};,!&\*\[\]\|\<>=\+-]* { printf("Error type A at line %d: Unknown lexeme \"%s\" \n", yylineno, yytext); error_flag = 1; }
+. { printf("Error type A at Line %d: Unknown characters %s\n", yylineno, yytext); }
 %%
 #ifndef MYTREE
 int main(int argc, char **argv){
